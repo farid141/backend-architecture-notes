@@ -1,15 +1,18 @@
 # Penjelasan
+
 CI/CD masih belum fully automated karena ada campur tangan dari developer ketika ada update fitur (`start run pipeline` dan `pull image results dari server`)
 
 ## Langkah-langkah
+
 ### 1. Membuat jenkins pipeline untuk build image
+
   ```groovy
-  /* Iotera shared library */
+  /* Cmp_sbsd shared library */
   library(
-    identifier: 'iotera-jenkins-shared-library@master',
+    identifier: 'cmp_sbsd-jenkins-shared-library@master',
     retriever: modernSCM([
       $class: 'GitSCMSource',
-      remote: 'http://m2mdev.tritronik.com:30081/iotera/jenkins/iotera-jenkins-shared-library',
+      remote: 'http://m2mdev.my_cmp.com:30081/cmp_sbsd/jenkins/cmp_sbsd-jenkins-shared-library',
       credentialsId: 'git-m2mdev-cicd'
     ])
   )
@@ -30,16 +33,16 @@ CI/CD masih belum fully automated karena ada campur tangan dari developer ketika
 
       /* Agent docker registry */
       AGENT_REGISTRY_URL = 'https://index.docker.io/v2/'
-      AGENT_REGISTRY_CREDENTIALS = 'dockerregistry-docker-iotera'
+      AGENT_REGISTRY_CREDENTIALS = 'dockerregistry-docker-cmp_sbsd'
 
       /* Git environment */
       GIT_CREDENTIALS = 'git-m2mdev-cicd'
-      MAIN_GIT_URL = 'http://m2mdev.tritronik.com:30081/iotera-demo/smartvault-mockup'
+      MAIN_GIT_URL = 'http://m2mdev.my_cmp.com:30081/cmp_sbsd-demo/smartvault-mockup'
 
       /* Docker environment */
-      DCKER_REGISTRY_URL = 'https://hub.tritronik.com'
-      DCKER_CREDENTIALS = 'dockerregistry-tritronik-m2mdev'
-      DCKER_REGISTRY = 'hub.tritronik.com'
+      DCKER_REGISTRY_URL = 'https://hub.my_cmp.com'
+      DCKER_CREDENTIALS = 'dockerregistry-my_cmp-m2mdev'
+      DCKER_REGISTRY = 'hub.my_cmp.com'
       DCKER_IMAGE = 'smartvault/smartvault-mockup'
     }
 
@@ -127,21 +130,25 @@ CI/CD masih belum fully automated karena ada campur tangan dari developer ketika
   }
   ```
 
-  Beberapa Point:
-  - Code tersebut akan mengambil dari repo
+#### Analisa
+
+- Code tersebut akan mengambil dari repo
+
     ```groovy
     @Field
     def _gitBranch = 'master'
 
-    MAIN_GIT_URL = 'http://m2mdev.tritronik.com:30081/iotera-demo/smartvault-mockup'
+    MAIN_GIT_URL = 'http://m2mdev.my_cmp.com:30081/cmp_sbsd-demo/smartvault-mockup'
     ```
-  - Membuat hasil build image ke registry
-  ``` groovy  
-    @Field
-    def _dockerTag = 'staging-dev'
 
-    DCKER_REGISTRY = 'hub.tritronik.com'
-    DCKER_IMAGE = 'smartvault/smartvault-mockup'
+- Membuat hasil build image ke registry
+
+  ``` groovy  
+  @Field
+  def _dockerTag = 'staging-dev'
+
+  DCKER_REGISTRY = 'hub.my_cmp.com'
+  DCKER_IMAGE = 'smartvault/smartvault-mockup'
   ```
 
 ### 2. Membuat docker compose pada server
@@ -150,13 +157,13 @@ CI/CD masih belum fully automated karena ada campur tangan dari developer ketika
   version: '3.8'
   services:
     smartvault:
-      image: hub.tritronik.com/smartvault/smartvault-mockup:staging-dev
+      image: hub.my_cmp.com/smartvault/smartvault-mockup:staging-dev
       container_name: smartvault
       ports:
         - "48080:80"
       restart: always
       environment:
-        - SERVER_URL=https://bsi-service.iotera.net
+        - SERVER_URL=https://bsi-service.cmp_sbsd.net
         - SCHEMA_ID=BSI
         - SERVER_TOKEN=55cf1f472d41759c6340180e9bae2723
       networks:
@@ -166,8 +173,9 @@ CI/CD masih belum fully automated karena ada campur tangan dari developer ketika
     ims_network:
       external: true
   ```
-  Beberapa Point:
-  - Mengambil image dari hasil build pipeline jenkins
-    >hub.tritronik.com/smartvault/smartvault-mockup:staging-dev
 
+#### Analisa 2
 
+Mengambil image dari hasil build pipeline jenkins
+
+>hub.my_cmp.com/smartvault/smartvault-mockup:staging-dev

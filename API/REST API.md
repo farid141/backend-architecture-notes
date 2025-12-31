@@ -21,5 +21,5 @@ gunakan noun plural untuk url
 - `201` created
 - `204` no content
 
-- `404` not found
+- `404` not found, `ketika get/update/delete specific data dan gaada`
 - `401` unauthorized
